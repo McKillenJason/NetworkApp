@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Network Visualization</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Interactive Network Visualization</h1>
+    <div>
+        <input type="text" id="node" placeholder="Node name">
+        <button id="addNode">Add Node</button>
+        <button id="deleteNode">Delete Node</button>
+        <button id="visualize">Visualize Network</button>
+
+        <input type="text" id="sourceNode" placeholder="Source node">
+        <input type="text" id="targetNode" placeholder="Target node">
+        <button id="addEdge">Add Edge</button>
+        <button id="deleteEdge">Delete Edge</button>
+
+        <div>
+            <input type="text" id="nodeInfo" placeholder="Node info">
+            <button id="addInfo">Add Info</button>
+        </div>
+        
+    </div>
+    
+    <div id="visualizationContainer" style="margin-top: 20px;">
+        <!-- Network visualization will be displayed here -->
+    </div>
+    <script>
+        $(document).ready(function() {
+            updateNetworkVisualization();
+            $("#addNode").click(function() {
+                const node = $("#node").val();
+                if (node) {
+                    $.post                    ("/add_node", {node: node}, function(data) {
+                        if (data.success) {
+                            $("#node").val("");
+                            alert("Node added.");
+                            updateNetworkVisualization();
+                        }
+                    });
+                }
+            });
+
+            $("#deleteNode").click(function() {
+                const node = $("#node").val();
+                if (node) {
+                    $.post("/delete_node", {node: node}, function(data) {
+                        if (data.success) {
+                            $("#node").val("");
+                            alert("Node deleted.");
+                            updateNetworkVisualization();
+                        } else {
+                            alert("Node not found.");
+                        }
+                    });
+                }
+            });
+
+            $("#visualize").click(function() {
+                $.get("/visualize_network", function(data) {
+                    if (data.success) {
+                        $("#visualizationContainer").load("/static/network_visualization.html");
+                    }
+                });
+            });
+        });
+        $("#addEdge").click(function() {
+    const sourceNode = $("#sourceNode").val();
+    const targetNode = $("#targetNode").val();
+    if (sourceNode && targetNode) {
+        $.post("/add_edge", {source: sourceNode, target: targetNode}, function(data) {
+            if (data.success) {
+                $("#sourceNode").val("");
+                $("#targetNode").val("");
+                alert("Edge added.");
+                updateNetworkVisualization();
+            } else {
+                alert("Could not add edge. Make sure both nodes exist.");
+            }
+        });
+    }
+});
+
+$("#deleteEdge").click(function() {
+    const sourceNode = $("#sourceNode").val();
+    const targetNode = $("#targetNode").val();
+    if (sourceNode && targetNode) {
+        $.post("/delete_edge", {source: sourceNode, target: targetNode}, function(data) {
+            if (data.success) {
+                $("#sourceNode").val("");
+                $("#targetNode").val("");
+                alert("Edge deleted.");
+                updateNetworkVisualization();
+            } else {
+                alert("Could not delete edge. Make sure the edge exists.");
+            }
+        });
+    }
+});
+function updateNetworkVisualization() {
+    $.get("/visualize_network", function (data) {
+        if (data.success) {
+            $("#visualizationContainer").load("/static/network_visualization.html");
+        }
+    });
+}
+$("#addInfo").click(function () {
+    const node = $("#node").val();
+    const info = $("#nodeInfo").val();
+    if (node && info) {
+        $.post("/update_node_info", { node: node, info: info }, function (data) {
+            if (data.success) {
+                $("#node").val("");
+                $("#nodeInfo").val("");
+                updateNetworkVisualization();
+            } else {
+                alert("Node not found.");
+            }
+        });
+    }
+});
+
+
+    </script>
+</body>
+</html>
+
